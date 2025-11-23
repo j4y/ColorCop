@@ -413,6 +413,29 @@ BOOL CColorCopDlg::OnInitDialog()
 
 }
 
+BOOL CColorCopDlg::PreCreateWindow(CREATESTRUCT& cs)
+{
+    if (!CDialog::PreCreateWindow(cs))
+        return FALSE;
+
+    // Replace with your desired class name
+    static const TCHAR className[] = _T("ColorCopDialogClass");
+
+    // Get the existing WNDCLASS
+    WNDCLASS wc;
+    if (GetClassInfo(cs.hInstance, cs.lpszClass, &wc))
+    {
+        // Change the name
+        wc.lpszClassName = className;
+        // Register the renamed WNDCLASS
+        RegisterClass(&wc);
+        // Use the new one
+        cs.lpszClass = className;
+    }
+
+    return TRUE;
+}
+
 void CColorCopDlg::SetupSystemMenu()
 {
     // Load accelerator resource..

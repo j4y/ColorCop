@@ -78,8 +78,8 @@ BOOL CColorCopApp::InitInstance()
                 // release the obj that we tried to create
                 ReleaseMutex(m_hMutex);
 
-                        // Bring existing instance to foreground
-                HWND hExistingWnd = FindWindow(NULL, AfxGetInstanceHandle());
+                // Bring existing instance to foreground
+                HWND hExistingWnd = FindWindow(_T("ColorCopDialogClass"), NULL);
                 if (hExistingWnd != NULL)
                 {
                     ShowWindow(hExistingWnd, SW_RESTORE);
@@ -92,10 +92,9 @@ BOOL CColorCopApp::InitInstance()
                     info.uCount = 3;
                     info.dwTimeout = 0;
                     FlashWindowEx(&info);
-                    }
-
+                }
                 return false;
-            }
+             }
 
     }
 

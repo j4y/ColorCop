@@ -213,6 +213,9 @@ protected:
     void CColorCopDlg::UpdateCMYKFromRGB(int red, int green, int blue);
     void CColorCopDlg::ChangeColorSpace(bool bRGB);
 
+    virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+
+
     // Generated message map functions
     //{{AFX_MSG(CColorCopDlg)
     virtual BOOL OnInitDialog();
