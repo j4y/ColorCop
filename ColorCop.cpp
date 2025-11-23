@@ -78,10 +78,21 @@ BOOL CColorCopApp::InitInstance()
                 // release the obj that we tried to create
                 ReleaseMutex(m_hMutex);
 
-                // TODO(j4y): find the current instance and bring forward instead of a msg.  fixes issue #4
-                AfxMessageBox(IDS_APP_RUNNING);
+                        // Bring existing instance to foreground
+                HWND hExistingWnd = FindWindow(NULL, AfxGetInstanceHandle());
+                if (hExistingWnd != NULL)
+                {
+                    ShowWindow(hExistingWnd, SW_RESTORE);
+                    SetForegroundWindow(hExistingWnd);
 
-                // error instead
+                    // Flash the window to draw attention
+                    FLASHWINFO info = { sizeof(info) };
+                    info.hwnd = hExistingWnd;
+                    info.dwFlags = FLASHW_TRAY | FLASHW_ALL;
+                    info.uCount = 3;
+                    info.dwTimeout = 0;
+                    FlashWindowEx(&info);
+                    }
 
                 return false;
             }
@@ -203,18 +214,16 @@ void CColorCopApp::ClipOrCenterWindowToMonitor(HWND hwnd, UINT flags)
 
 BOOL CColorCopApp::InitApplication()
 {
-
     CString strInitFile = GetTempFolder();
-
     strInitFile += INI_FILE_DIR;
-
     strInitFile += INI_FILE;
-
 
     CFile file;
     if(file.Open(strInitFile, CFile::modeRead)) {
         CArchive ar(&file, CArchive::load);
         Serialize(ar);
+        // successfully loaded settings from file
+        file.Close();
     } else {
 
         // First time we are running color Cop
@@ -328,11 +337,11 @@ void CColorCopApp::LoadDefaultSettings() {
 
 
         // set all custom color blocks to white
-        for(int initcolor = 0; initcolor < 16; initcolor++)
+        for (int initcolor = 0; initcolor < 16; initcolor++)
         {
             dlg.CustColorBank[initcolor] = (COLORREF) 0x00FFFFFF;
         }
-                    //C++ explicit hex 0x00bbggrr
+        // C++ explicit hex 0x00bbggrr
 
         dlg.ColorHistory[0] = (COLORREF) 0x00223300;    // setup default colors for the
         dlg.ColorHistory[1] = (COLORREF) 0x000000FF;    // color history bar
@@ -360,13 +369,16 @@ void CColorCopApp::CloseApplication() {
     strInitFile += INI_FILE;
 
     CFile file;
-    if(file.Open(strInitFile,CFile::modeWrite|CFile::modeCreate))
+    if (file.Open(strInitFile,CFile::modeWrite|CFile::modeCreate))
     {
         CArchive ar(&file, CArchive::store);
         Serialize(ar);
+        // successfully wrote settings to file
+        file.Close();
     }
 
-    // release mutex.  what if this fails
+    // release mutex
+    // TODO(j4y): add error handling if this fails
     ReleaseMutex(m_hMutex);
 
     return;
