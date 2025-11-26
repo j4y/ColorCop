@@ -224,7 +224,7 @@ protected:
     afx_msg void OnChangeBlue();
     afx_msg void OnChangeRed();
     afx_msg void OnColorPick();
-    afx_msg void OnCopytoclip();
+    afx_msg bool OnCopytoclip();
     afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
     afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
     afx_msg void OnMouseMove(UINT nFlags, CPoint point);
