@@ -1481,34 +1481,84 @@ void CColorCopDlg::OnColorPick()
     }
 }
 
-void CColorCopDlg::OnCopytoclip()
+bool CColorCopDlg::OnCopytoclip()
 {
-    if(m_Appflags & AutoCopytoClip)    // the option to auto copy to the clipboard is ON
-    {
-        HWND CCopHWND=::GetForegroundWindow();        // get a handle to the app window
+    // Early return if auto-copy is disabled
+    if (!(m_Appflags & AutoCopytoClip))
+        return false;
 
-        if(::OpenClipboard(CCopHWND))
-        {
-            HGLOBAL clipbuffer;
-              char * buffer;
-            ::EmptyClipboard();
+    HWND hwnd = GetForegroundWindow();
+    if (!hwnd)
+        return false;
 
-            // empty clipboard is bad because it will remove DIBs too
-//The window identified by the hWndNewOwner parameter does not
-    //become the clipboard owner unless the EmptyClipboard function is called
+    // Initialize clipboard data
+    HGLOBAL clipbuffer = nullptr;
+    void* buffer = nullptr;
 
-            clipbuffer=::GlobalAlloc(GMEM_DDESHARE, m_Hexcolor.GetLength()+1);
-            buffer = (char *) GlobalLock(clipbuffer);
-            //_tcscpy_s(m_tnd.szTip, 128, szToolTip);
+    try {
+        // Open clipboard
+        if (!OpenClipboard(hwnd))
+            throw GetLastError();
 
-            strcpy(buffer, LPCSTR(m_Hexcolor));
+        // Allocate memory for clipboard data
+        clipbuffer = GlobalAlloc(GMEM_DDESHARE, m_Hexcolor.GetLength() + 1);
+        if (!clipbuffer)
+            throw GetLastError();
 
-            ::GlobalUnlock(clipbuffer);
-            ::SetClipboardData(CF_TEXT,clipbuffer);
-            ::CloseClipboard();
-        }
+        // Lock the memory block
+        buffer = GlobalLock(clipbuffer);
+        if (!buffer)
+            throw GetLastError();
+
+        // Copy the color data safely
+        size_t bufferSize = m_Hexcolor.GetLength() + 1;
+        int charsWritten = snprintf(
+            static_cast<char*>(buffer),
+            bufferSize,
+            "%s",
+            static_cast<const char*>(LPCSTR(m_Hexcolor))
+        );
+
+        if (charsWritten < 0 || static_cast<size_t>(charsWritten) >= bufferSize)
+            throw ERROR_INVALID_DATA;
+
+        // Set clipboard data
+        if (!SetClipboardData(CF_TEXT, clipbuffer))
+            throw GetLastError();
+
+        return true;
     }
-    return;
+    catch (DWORD errorCode) {
+        // Log the error
+        CString errorMessage;
+        errorMessage.Format(_T("Clipboard operation failed: Error %d"), errorCode);
+        AfxMessageBox(errorMessage);
+
+        // Clean up resources
+        if (buffer)
+            GlobalUnlock(clipbuffer);
+        if (clipbuffer)
+            GlobalFree(clipbuffer);
+        if (IsClipboardFormatAvailable(CF_TEXT))
+            SetClipboardData(CF_TEXT, nullptr);
+
+        return false;
+    }
+    catch (...) {
+        // Clean up resources on unexpected error
+        if (buffer)
+            GlobalUnlock(clipbuffer);
+        if (clipbuffer)
+            GlobalFree(clipbuffer);
+        if (IsClipboardFormatAvailable(CF_TEXT))
+            SetClipboardData(CF_TEXT, nullptr);
+
+        throw; // Re-throw unexpected exceptions
+    }
+
+    // Ensure clipboard is closed even if we exit early
+    CloseClipboard();
+    return true;
 }
 
 void CColorCopDlg::StopCapture()
