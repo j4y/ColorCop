@@ -4,9 +4,9 @@
 // Label.cpp : implementation file
 //
 
-#include "stdafx.h"
-#include "Resource.h"
 #include "Label.h"
+#include "Resource.h"
+#include "stdafx.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -17,200 +17,174 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CLabel
 
-CLabel::CLabel()
-{
-    m_crText = GetSysColor(COLOR_WINDOWTEXT);
-    m_hBrush = ::CreateSolidBrush(GetSysColor(COLOR_3DFACE));
+CLabel::CLabel() {
+  m_crText = GetSysColor(COLOR_WINDOWTEXT);
+  m_hBrush = ::CreateSolidBrush(GetSysColor(COLOR_3DFACE));
 
-    ::GetObject((HFONT)GetStockObject(DEFAULT_GUI_FONT),sizeof(m_lf),&m_lf);
+  ::GetObject((HFONT)GetStockObject(DEFAULT_GUI_FONT), sizeof(m_lf), &m_lf);
 
-    m_font.CreateFontIndirect(&m_lf);
-    m_bTimer = FALSE;
-    m_bState = FALSE;
-    m_bLink = TRUE;
-    m_hCursor = NULL;
-    m_Type = None;
+  m_font.CreateFontIndirect(&m_lf);
+  m_bTimer = FALSE;
+  m_bState = FALSE;
+  m_bLink = TRUE;
+  m_hCursor = NULL;
+  m_Type = None;
 
-    m_hwndBrush = ::CreateSolidBrush(GetSysColor(COLOR_3DFACE));
+  m_hwndBrush = ::CreateSolidBrush(GetSysColor(COLOR_3DFACE));
 }
 
+CLabel::~CLabel() {
+  m_font.DeleteObject();
+  ::DeleteObject(m_hBrush);
+}
 
-CLabel::~CLabel()
-{
-    m_font.DeleteObject();
+CLabel &CLabel::SetText(const CString &strText) {
+  SetWindowText(strText);
+  return *this;
+}
+
+CLabel &CLabel::SetTextColor(COLORREF crText) {
+  m_crText = crText;
+  RedrawWindow();
+  return *this;
+}
+
+CLabel &CLabel::SetFontBold(BOOL bBold) {
+  m_lf.lfWeight = bBold ? FW_BOLD : FW_NORMAL;
+  ReconstructFont();
+  RedrawWindow();
+  return *this;
+}
+
+CLabel &CLabel::SetFontUnderline(BOOL bSet) {
+  m_lf.lfUnderline = bSet;
+  ReconstructFont();
+  RedrawWindow();
+  return *this;
+}
+
+CLabel &CLabel::SetFontItalic(BOOL bSet) {
+  m_lf.lfItalic = bSet;
+  ReconstructFont();
+  RedrawWindow();
+  return *this;
+}
+
+CLabel &CLabel::SetFontSize(int nSize) {
+  nSize *= -1;
+  m_lf.lfHeight = nSize;
+  ReconstructFont();
+  RedrawWindow();
+  return *this;
+}
+
+CLabel &CLabel::SetBkColor(COLORREF crBkgnd) {
+  if (m_hBrush)
     ::DeleteObject(m_hBrush);
+
+  m_hBrush = ::CreateSolidBrush(crBkgnd);
+  return *this;
 }
 
-CLabel& CLabel::SetText(const CString& strText)
-{
-    SetWindowText(strText);
-    return *this;
+CLabel &CLabel::SetFontName(const CString &strFont) {
+  // Use secure CRT helper to avoid C4996 and buffer overruns.
+  // sizeof(m_lf.lfFaceName)/sizeof(TCHAR) yields the element count
+  // (LF_FACESIZE).
+  _tcscpy_s(m_lf.lfFaceName, sizeof(m_lf.lfFaceName) / sizeof(TCHAR),
+            (LPCTSTR)strFont);
+  ReconstructFont();
+  RedrawWindow();
+  return *this;
 }
-
-CLabel& CLabel::SetTextColor(COLORREF crText)
-{
-    m_crText = crText;
-    RedrawWindow();
-    return *this;
-}
-
-CLabel& CLabel::SetFontBold(BOOL bBold)
-{
-    m_lf.lfWeight = bBold ? FW_BOLD : FW_NORMAL;
-    ReconstructFont();
-    RedrawWindow();
-    return *this;
-}
-
-CLabel& CLabel::SetFontUnderline(BOOL bSet)
-{
-    m_lf.lfUnderline = bSet;
-    ReconstructFont();
-    RedrawWindow();
-    return *this;
-}
-
-CLabel& CLabel::SetFontItalic(BOOL bSet)
-{
-    m_lf.lfItalic = bSet;
-    ReconstructFont();
-    RedrawWindow();
-    return *this;
-}
-
-
-CLabel& CLabel::SetFontSize(int nSize)
-{
-    nSize*=-1;
-    m_lf.lfHeight = nSize;
-    ReconstructFont();
-    RedrawWindow();
-    return *this;
-}
-
-
-CLabel& CLabel::SetBkColor(COLORREF crBkgnd)
-{
-    if (m_hBrush)
-        ::DeleteObject(m_hBrush);
-
-    m_hBrush = ::CreateSolidBrush(crBkgnd);
-    return *this;
-}
-
-CLabel& CLabel::SetFontName(const CString& strFont)
-{
-    // Use secure CRT helper to avoid C4996 and buffer overruns.
-    // sizeof(m_lf.lfFaceName)/sizeof(TCHAR) yields the element count (LF_FACESIZE).
-    _tcscpy_s(m_lf.lfFaceName, sizeof(m_lf.lfFaceName) / sizeof(TCHAR), (LPCTSTR)strFont);
-    ReconstructFont();
-    RedrawWindow();
-    return *this;
-}
-
 
 BEGIN_MESSAGE_MAP(CLabel, CStatic)
-    //{{AFX_MSG_MAP(CLabel)
-    ON_WM_CTLCOLOR_REFLECT()
-    ON_WM_TIMER()
-    ON_WM_LBUTTONDOWN()
-    ON_WM_SETCURSOR()
-    //}}AFX_MSG_MAP
+//{{AFX_MSG_MAP(CLabel)
+ON_WM_CTLCOLOR_REFLECT()
+ON_WM_TIMER()
+ON_WM_LBUTTONDOWN()
+ON_WM_SETCURSOR()
+//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CLabel message handlers
 
-HBRUSH CLabel::CtlColor(CDC* pDC, UINT nCtlColor)
-{
-    // TODO(j4y): Change any attributes of the DC here
-    // TODO(j4y): Return a non-NULL brush if the parent's handler should not be called
+HBRUSH CLabel::CtlColor(CDC *pDC, UINT nCtlColor) {
+  // TODO(j4y): Change any attributes of the DC here
+  // TODO(j4y): Return a non-NULL brush if the parent's handler should not be
+  // called
 
-    if (CTLCOLOR_STATIC == nCtlColor)
-    {
-        pDC->SelectObject(&m_font);
-        pDC->SetTextColor(m_crText);
-        pDC->SetBkMode(TRANSPARENT);
-    }
+  if (CTLCOLOR_STATIC == nCtlColor) {
+    pDC->SelectObject(&m_font);
+    pDC->SetTextColor(m_crText);
+    pDC->SetBkMode(TRANSPARENT);
+  }
 
+  if (m_Type == Background) {
+    if (!m_bState)
+      return m_hwndBrush;
+  }
 
-    if (m_Type == Background)
-    {
-        if (!m_bState)
-            return m_hwndBrush;
-    }
-
-    return m_hBrush;
+  return m_hBrush;
 }
 
-void CLabel::ReconstructFont()
-{
-    m_font.DeleteObject();
-    BOOL bCreated = m_font.CreateFontIndirect(&m_lf);
+void CLabel::ReconstructFont() {
+  m_font.DeleteObject();
+  BOOL bCreated = m_font.CreateFontIndirect(&m_lf);
 
-    ASSERT(bCreated);
+  ASSERT(bCreated);
 }
 
+void CLabel::OnTimer(UINT nIDEvent) {
+  m_bState = !m_bState;
 
-
-void CLabel::OnTimer(UINT nIDEvent)
-{
-    m_bState = !m_bState;
-
-    switch (m_Type)
-    {
-        case Text:
-            if (m_bState)
-                SetWindowText("");
-            else
-                SetWindowText(m_strText);
-        break;
-
-        case Background:
-            InvalidateRect(NULL,FALSE);
-            UpdateWindow();
-        break;
-    }
-
-    CStatic::OnTimer(nIDEvent);
-}
-
-CLabel& CLabel::SetLink(BOOL bLink)
-{
-    m_bLink = bLink;
-
-    if (bLink)
-        ModifyStyle(0,SS_NOTIFY);
+  switch (m_Type) {
+  case Text:
+    if (m_bState)
+      SetWindowText("");
     else
-        ModifyStyle(SS_NOTIFY,0);
+      SetWindowText(m_strText);
+    break;
 
-    return *this;
+  case Background:
+    InvalidateRect(NULL, FALSE);
+    UpdateWindow();
+    break;
+  }
+
+  CStatic::OnTimer(nIDEvent);
 }
 
-void CLabel::OnLButtonDown(UINT nFlags, CPoint point)
-{
-    CString strLink;
+CLabel &CLabel::SetLink(BOOL bLink) {
+  m_bLink = bLink;
 
-    GetWindowText(strLink);
-    ShellExecute(NULL,"open",strLink,NULL,NULL,SW_SHOWNORMAL);
+  if (bLink)
+    ModifyStyle(0, SS_NOTIFY);
+  else
+    ModifyStyle(SS_NOTIFY, 0);
 
-    CStatic::OnLButtonDown(nFlags, point);
+  return *this;
 }
 
-BOOL CLabel::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
-{
-    if (m_hCursor)
-    {
-        ::SetCursor(m_hCursor);
-        return TRUE;
-    }
+void CLabel::OnLButtonDown(UINT nFlags, CPoint point) {
+  CString strLink;
 
-    return CStatic::OnSetCursor(pWnd, nHitTest, message);
+  GetWindowText(strLink);
+  ShellExecute(NULL, "open", strLink, NULL, NULL, SW_SHOWNORMAL);
+
+  CStatic::OnLButtonDown(nFlags, point);
 }
 
-CLabel& CLabel::SetLinkCursor(HCURSOR hCursor)
-{
-    m_hCursor = hCursor;
-    return *this;
+BOOL CLabel::OnSetCursor(CWnd *pWnd, UINT nHitTest, UINT message) {
+  if (m_hCursor) {
+    ::SetCursor(m_hCursor);
+    return TRUE;
+  }
+
+  return CStatic::OnSetCursor(pWnd, nHitTest, message);
 }
 
+CLabel &CLabel::SetLinkCursor(HCURSOR hCursor) {
+  m_hCursor = hCursor;
+  return *this;
+}
