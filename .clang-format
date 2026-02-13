@@ -1,5 +1,3 @@
 BraceWrapping:
   AfterControlStatement: true
   BeforeElse: true
-
-

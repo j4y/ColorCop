@@ -1,0 +1,69 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build ColorCop (Win32 Release)",
+      "type": "shell",
+      "command": "MSBuild.exe",
+      "args": [
+        "ColorCop.sln",
+        "/p:Configuration=Release",
+        "/p:Platform=Win32",
+        "/p:RunCodeAnalysis=true",
+        "/p:CodeAnalysisRuleSet=NativeMinimumRules.ruleset",
+        "/p:CodeAnalysisTreatWarningsAsErrors=false"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$msCompile"
+    },
+
+    {
+      "label": "Build ColorCop (x64 Release)",
+      "type": "shell",
+      "command": "MSBuild.exe",
+      "args": [
+        "ColorCop.sln",
+        "/p:Configuration=Release",
+        "/p:Platform=x64",
+        "/p:RunCodeAnalysis=true",
+        "/p:CodeAnalysisRuleSet=NativeMinimumRules.ruleset",
+        "/p:CodeAnalysisTreatWarningsAsErrors=false"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile"
+    },
+
+    {
+      "label": "Build Installer (Inno Setup)",
+      "type": "shell",
+      "command": "iscc.exe",
+      "args": [
+        "/O+",
+        "inno/colorcop.iss"
+      ],
+      "problemMatcher": []
+    },
+
+    {
+      "label": "Create Portable ZIP",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-NoLogo",
+        "-NoProfile",
+        "-Command",
+        "Remove-Item -Recurse -Force Release-standalone -ErrorAction SilentlyContinue; " +
+        "New-Item -ItemType Directory Release-standalone | Out-Null; " +
+        "Copy-Item Release/*.exe Release-standalone; " +
+        "Copy-Item ReadMe.txt Release-standalone; " +
+        "Copy-Item LICENSE.txt Release-standalone; " +
+        "Copy-Item packaging/*.chm Release-standalone; " +
+        "Compress-Archive -Path Release-standalone/* -DestinationPath colorcop.zip -Force"
+      ]
+    }
+  ]
+}
+
