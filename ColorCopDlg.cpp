@@ -2566,9 +2566,9 @@ bool CColorCopDlg::AveragePixelArea(HDC hdc, int* m_R, int* m_G, int* m_B, CPoin
             bluedec += GetBValue(crefxy);
         }
     }
-    reddec = (int) reddec / elements;  // average
-    greendec = (int) greendec / elements;  // average
-    bluedec = (int) bluedec / elements;  // average
+    reddec = reddec / elements;  // average
+    greendec = greendec / elements;  // average
+    bluedec = bluedec / elements;  // average
 
     if (RGB(reddec, greendec, bluedec) != RGB(m_Reddec, m_Greendec, m_Bluedec)) {
         *m_R = reddec;
