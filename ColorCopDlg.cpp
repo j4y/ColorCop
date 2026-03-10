@@ -1050,8 +1050,8 @@ void CColorCopDlg::DisplayColor() {
         int palWidth = (colorpalrect.right - colorpalrect.left);
         int palHeight = (colorpalrect.bottom - colorpalrect.top);
 
-        m_nwide = (int) (palWidth / 6.0);
-        m_ntall = (int) (palHeight / 7.0);
+        m_nwide = static_cast<int>(palWidth  / 6.0);
+        m_ntall = static_cast<int>(palHeight / 7.0);
 
         CRect insiderect = colorpalrect;
         insiderect.right = insiderect.left + m_nwide;
