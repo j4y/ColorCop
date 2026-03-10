@@ -728,9 +728,9 @@ void CColorCopDlg::OnconvertRGB() {
     } else if (m_Appflags & RGBINT) {
         m_Hexcolor.Format("%d,%d,%d", m_Reddec, m_Greendec, m_Bluedec);
     } else if (m_Appflags & RGBFLOAT) {
-        r = (float)m_Reddec / 255.0f;
-        g = (float)m_Greendec / 255.0f;
-        b = (float)m_Bluedec / 255.0f;
+        r = static_cast<float>(m_Reddec)   / 255.0f;
+        g = static_cast<float>(m_Greendec) / 255.0f;
+        b = static_cast<float>(m_Bluedec)  / 255.0f;
         m_Hexcolor.Format(_T("%0.*f,%0.*f,%0.*f"), m_FloatPrecision, r, m_FloatPrecision, g, m_FloatPrecision, b);
     } else if (m_Appflags & ModeVisualC) {
         m_Hexcolor.Format("0x00%.2x%.2x%.2x", m_Bluedec, m_Greendec, m_Reddec);
@@ -888,7 +888,10 @@ void CColorCopDlg::setSeedColor() {
     OrigSwatch.C = m_Bluedec;
 
     // convert the color to HSL
-    RGBtoHSL((int) OrigSwatch.A, (int) OrigSwatch.B, (int) OrigSwatch.C);
+    RGBtoHSL(
+        static_cast<int>(OrigSwatch.A),
+        static_cast<int>(OrigSwatch.B),
+        static_cast<int>(OrigSwatch.C));
 
     // set the swatch to the HSL values
     OrigSwatch.A = Hue;
@@ -1585,11 +1588,11 @@ void CColorCopDlg::OnMouseMove(UINT nFlags, CPoint point) {
                     int iWidth = (point.x - RelativePoint.x);
                     int iHeight = (point.y - RelativePoint.y);
 
-                    // we need to add one since they are zero based
-                    double dWidth = (double)iWidth+1;
-                    double dHeight = (double)iHeight+1;
+                    // add one since they are zero based
+                    double dWidth  = static_cast<double>(iWidth)  + 1.0;
+                    double dHeight = static_cast<double>(iHeight) + 1.0;
 
-                    double dLength = sqrt(dWidth*dWidth + dHeight * dHeight);
+                    double dLength = sqrt(dWidth * dWidth + dHeight * dHeight);
                     double dAngle = 0.0;
 
                     if (iWidth == 0) {
