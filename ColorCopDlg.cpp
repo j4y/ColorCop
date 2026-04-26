@@ -16,6 +16,7 @@
 #include "ColorCopDlg.h"
 #include "Label.h"       // used for the links in the AboutDlg
 #include "SystemTray.h"  // used to minimize to the systray
+#include "AboutDlg.h"
 
 // Windows SDK headers (explicit APIs used in this file)
 #include <commctrl.h>
@@ -30,51 +31,6 @@
 constexpr int WEBSAFE_STEP = 51;
 constexpr int RGB_MIN = 0;
 constexpr int RGB_MAX = 255;
-
-class CAboutDlg : public CDialog {
- public:
-    CAboutDlg();
-
-// Dialog Data
-    //{{AFX_DATA(CAboutDlg) // NOLINT(whitespace/comments)
-    enum { IDD = IDD_ABOUTBOX };
-    CLabel    m_maillink;
-    CLabel    m_link;
-    //}}AFX_DATA // NOLINT(whitespace/comments)
-
-    // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CAboutDlg) // NOLINT(whitespace/comments)
- protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-    //}}AFX_VIRTUAL // NOLINT(whitespace/comments)
-
-// Implementation
-
- protected:
-    //{{AFX_MSG(CAboutDlg) // NOLINT(whitespace/comments)
-    virtual BOOL OnInitDialog();
-    //}}AFX_MSG // NOLINT(whitespace/comments)
-    DECLARE_MESSAGE_MAP()
-};
-
-CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD) {
-    //{{AFX_DATA_INIT(CAboutDlg) // NOLINT(whitespace/comments)
-    //}}AFX_DATA_INIT // NOLINT(whitespace/comments)
-}
-
-
-void CAboutDlg::DoDataExchange(CDataExchange* pDX) {
-    CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CAboutDlg) // NOLINT(whitespace/comments)
-    DDX_Control(pDX, IDC_MAILLINK, m_maillink);
-    DDX_Control(pDX, IDC_LINK, m_link);
-    //}}AFX_DATA_MAP // NOLINT(whitespace/comments)
-}
-
-BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
-    //{{AFX_MSG_MAP(CAboutDlg) // NOLINT(whitespace/comments)
-    //}}AFX_MSG_MAP // NOLINT(whitespace/comments)
-END_MESSAGE_MAP()
 
 // Constants
 
